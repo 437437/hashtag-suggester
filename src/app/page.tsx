@@ -4,6 +4,7 @@ import CustomModal from "@/components/CustomModal";
 import type { ChangeEvent } from "react";
 
 type Lang = "auto" | "ja" | "en";    
+export const metadata = { title: "Hashtag Suggester" };
 
 // --- カウント系ユーティリティ ---
 const URL_RE = /(https?:\/\/[^\s]+)|(?:www\.[^\s]+)/gi;
