@@ -1,6 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import CustomModal from "@/components/CustomModal";
+import type { ChangeEvent } from "react";
+
+type Lang = "auto" | "ja" | "en";    
 
 // --- カウント系ユーティリティ ---
 const URL_RE = /(https?:\/\/[^\s]+)|(?:www\.[^\s]+)/gi;
@@ -10,6 +13,7 @@ function countUnitsPlain(str: string): number {
   return units;
 }
 function countUnitsWithUrls(str: string): number {
+  URL_RE.lastIndex = 0;
   let total = 0, lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = URL_RE.exec(str)) !== null) {
@@ -23,6 +27,7 @@ function countUnitsWithUrls(str: string): number {
   return total;
 }
 function trimToUnitsWithUrls(str: string, maxUnits: number): string {
+  URL_RE.lastIndex = 0;
   let out = "", used = 0, lastIndex = 0;
   let m: RegExpExecArray | null;
   while ((m = URL_RE.exec(str)) !== null) {
@@ -74,7 +79,7 @@ function Footer() {
 // --- Main Component ---
 export default function Home() {
   const [text, setText] = useState("");
-  const [lang, setLang] = useState<"auto" | "ja" | "en">("auto");
+  const [lang, setLang] = useState<Lang>("auto");
   const [loading, setLoading] = useState(false);
   const [tags, setTags] = useState<string[]>([]);
   const [source, setSource] = useState<string>("");
@@ -105,12 +110,6 @@ export default function Home() {
     message: string;
     confirmText?: string;
   }>({ open: false, action: null, title: "", message: "" });
-
-  // （表示用の簡易判定。未使用なら消してOK）
-  const effectiveLang = useMemo<"ja" | "en">(() => {
-    if (lang === "ja" || lang === "en") return lang;
-    return /[\u3040-\u30ff\u3400-\u9fff]/.test(text) ? "ja" : "en";
-  }, [lang, text]);
 
   const LIMIT = 280;
   const usedUnits = countUnitsWithUrls(text);
@@ -247,7 +246,9 @@ export default function Home() {
               <select
                 className="border rounded p-1"
                 value={lang}
-                onChange={(e) => setLang(e.target.value as any)}
+                onChange={(e: ChangeEvent<HTMLSelectElement>) =>
+                  setLang(e.target.value as Lang)
+                }
               >
                 <option value="auto">Auto</option>
                 <option value="ja">日本語</option>
