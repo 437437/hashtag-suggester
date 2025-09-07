@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import CustomModal from "@/components/CustomModal";
 import type { ChangeEvent } from "react";
 
@@ -75,11 +75,28 @@ export default function Home() {
     message: "",
     tone: "info",
   });
-  const showToast = (message: string, tone: "info" | "error" | "success" = "info", ms = 2000) => {
+  const toastTimeoutRef = useRef<number | null>(null);
+  const showToast = (
+    message: string,
+    tone: "info" | "error" | "success" = "info",
+    ms = 2000
+  ) => {
     setToast({ open: true, message, tone });
-    window.clearTimeout((showToast as any)._t);
-    (showToast as any)._t = window.setTimeout(() => setToast((t) => ({ ...t, open: false })), ms);
+    if (toastTimeoutRef.current !== null) {
+      window.clearTimeout(toastTimeoutRef.current);
+    }
+    const id = window.setTimeout(() => {
+      setToast((t) => ({ ...t, open: false }));
+    }, ms);
+    toastTimeoutRef.current = id;
   };
+  useEffect(() => {
+    return () => {
+      if (toastTimeoutRef.current !== null) {
+        window.clearTimeout(toastTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // --- ボタン共通スタイル（黒 / 白） ---
   const BTN_BASE =
